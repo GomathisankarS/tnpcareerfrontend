@@ -65,12 +65,12 @@ test('public pagination, combined filters, sorting, reset, and browser history u
   page
 }) => {
   await page.goto(`/jobs?q=${encodeURIComponent(query)}`);
-  await expect(page.locator('.job-card')).toHaveCount(12);
+  await expect(page.locator('.job-card')).toHaveCount(8);
   await expect(page.getByText('Page 1 of 2')).toBeVisible();
   const firstPage = await page.locator('.job-card h3').allTextContents();
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(page.getByText('Page 2 of 2')).toBeVisible();
-  await expect(page.locator('.job-card')).toHaveCount(3);
+  await expect(page.locator('.job-card')).toHaveCount(7);
   const secondPage = await page.locator('.job-card h3').allTextContents();
   expect(secondPage.some((title) => firstPage.includes(title))).toBe(false);
   await page.goBack();
@@ -88,19 +88,22 @@ test('public pagination, combined filters, sorting, reset, and browser history u
   await expect(page.getByText('Nothing here yet')).toBeVisible();
   await page.getByRole('button', { name: 'Reset filters' }).click();
   await expect(page).toHaveURL(/\/jobs$/);
-  await expect(page.locator('.job-card')).toHaveCount(12);
+  await expect(page.locator('.job-card')).toHaveCount(8);
 });
 
 test('admin pagination and status filters include drafts and closed jobs', async ({ page }) => {
   await signIn(page, 'admin');
   await page.goto(`/admin/jobs?q=${encodeURIComponent(query)}`);
-  await expect(page.locator('tbody tr')).toHaveCount(12);
+  await expect(page.locator('tbody tr')).toHaveCount(8);
   await page.getByRole('button', { name: 'Next', exact: true }).click();
-  await expect(page.locator('tbody tr')).toHaveCount(5);
+  await expect(page.locator('tbody tr')).toHaveCount(8);
+  await expect(page.getByText('Page 2 of 3')).toBeVisible();
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(page.locator('tbody tr')).toHaveCount(1);
   await page.getByLabel('Status', { exact: true }).selectOption('draft');
   await expect(page.locator('tbody tr')).toHaveCount(1);
   await expect(page.locator('tbody')).toContainText(`${query} 15`);
-  await expect(page).not.toHaveURL(/page=2/);
+  await expect(page).not.toHaveURL(/page=[23]/);
   await page.getByLabel('Status', { exact: true }).selectOption('closed');
   await expect(page.locator('tbody')).toContainText(`${query} 16`);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -214,7 +217,7 @@ test('job list shows loading, a safe failure, and retry recovery', async ({ page
   );
   await page.unroute('**/api/jobs?**');
   await page.getByRole('button', { name: 'Try again' }).click();
-  await expect(page.locator('.job-card')).toHaveCount(12);
+  await expect(page.locator('.job-card')).toHaveCount(8);
   await expect(page.getByRole('alert')).toHaveCount(0);
 });
 
