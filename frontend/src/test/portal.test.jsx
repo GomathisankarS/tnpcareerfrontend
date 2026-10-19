@@ -401,3 +401,37 @@ it.each(['/jobs', '/jobs/1'])(
     ).toBe(false);
   }
 );
+
+it.each([
+  ['/login', 'candidate'],
+  ['/admin/login', 'admin']
+])(
+  'login at %s sends its intended role and displays a mismatch without signing in',
+  async (route, role) => {
+    let submitted;
+    mockApi(async (path, req) => {
+      if (path.endsWith('/auth/login')) {
+        submitted = await req.json();
+        return Response.json(
+          {
+            success: false,
+            error: {
+              code: 'LOGIN_ROLE_MISMATCH',
+              message: 'Please use the correct login page.'
+            }
+          },
+          { status: 403 }
+        );
+      }
+      return emptyNavigationResponse(req);
+    });
+    wrap(route);
+    const user = userEvent.setup();
+    await user.type(await screen.findByLabelText('Email or mobile number'), 'role@example.test');
+    await user.type(screen.getByLabelText('Password'), 'a-test-password');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(await screen.findByText('Please use the correct login page.')).toBeInTheDocument();
+    expect(submitted.loginRole).toBe(role);
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+  }
+);

@@ -82,7 +82,8 @@ export default function AuthPage({ register = false, admin = false }) {
       } else {
         const r = await login({
           identifier: values.identifier,
-          password: values.password
+          password: values.password,
+          loginRole: admin ? 'admin' : 'candidate'
         }).unwrap();
         const destination = r.data.user.role === 'admin' ? '/admin' : '/jobs';
         const from = location.state?.from;
