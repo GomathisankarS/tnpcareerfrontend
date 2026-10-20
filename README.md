@@ -14,6 +14,8 @@ After deployment, update FRONTEND_ORIGIN in the Render backend environment to th
 
 ## Verification
 
+Final cleanup checks and limits: [docs/verification.md](docs/verification.md).
+
 From frontend/, run npm test, npm run lint, npm run format:check and npm run build. Browser tests are retained under frontend/e2e. Their Playwright configuration requires the backend package at ../backend relative to frontend/, including its test fixtures and dependencies, plus an isolated MySQL instance configured using E2E_DB_* variables. They cannot run against the production application database and are not part of the unit-test command. For full local browser tests, place the backend directory from the backend repository alongside frontend/ in this checkout and install its dependencies; do not commit that backend copy here.
 
 ## Hosted verification still required
